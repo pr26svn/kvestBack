@@ -14,7 +14,18 @@
 - `database/migrations/` — миграции базы данных
 - `database/seeders/` — сидеры для начальных данных
 - `public/` — публичная точка входа
-- `resources/` — frontend-ресурсы
+- `resources/` — frontend-ресурсы Laravel
+- `front/` — Vue-фронтенд web-интерфейса
+
+## Frontend
+
+Каталог `front/` содержит Vue приложение для web-интерфейса. После поднятия backend можно запустить фронтенд из `front/`.
+
+```bash
+cd front
+npm install
+npm run dev
+```
 
 ## Быстрый запуск
 
