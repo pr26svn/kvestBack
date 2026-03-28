@@ -29,8 +29,16 @@ class StageController extends Controller
         return response()->json(['data' => $stage]);
     }
 
-    public function tasks(int $stageId): JsonResponse
+    public function tasks(Request $request, int $stageId): JsonResponse
     {
+        $userId = $request->query('userId');
+
+        if ($userId !== null) {
+            $tasks = $this->stageService->getStageTasksForUser($stageId, (int) $userId);
+
+            return response()->json(['data' => $tasks]);
+        }
+
         $tasks = $this->stageService->getStageTasks($stageId);
 
         return response()->json(['data' => $tasks]);

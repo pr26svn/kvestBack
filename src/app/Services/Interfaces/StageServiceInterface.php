@@ -11,4 +11,6 @@ interface StageServiceInterface
     public function getStage(int $id): ?object;
 
     public function getStageTasks(int $stageId): Collection;
+
+    public function getStageTasksForUser(int $stageId, int $userId): array;
 }

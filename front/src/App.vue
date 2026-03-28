@@ -7,16 +7,30 @@
 
     <main>
       <section>
-        <h2>Этапы квеста</h2>
-        <StageList />
+        <template v-if="!selectedStage">
+          <h2>Этапы квеста</h2>
+          <StageList @select-stage="openStage" />
+        </template>
+
+        <template v-else>
+          <StageDetail :stage="selectedStage" :userId="currentUserId" @back="selectedStage = null" />
+        </template>
       </section>
     </main>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import StageList from './components/StageList.vue';
-</script>
+import StageDetail from './components/StageDetail.vue';
+
+const selectedStage = ref(null);
+const currentUserId = 1;
+
+const openStage = (stage) => {
+  selectedStage.value = stage;
+};
 
 <style>
 body {

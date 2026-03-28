@@ -3,7 +3,7 @@
     <div v-if="loading">Загрузка этапов...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <ul v-else>
-      <li v-for="stage in stages" :key="stage.id" class="stage-card">
+      <li v-for="stage in stages" :key="stage.id" class="stage-card" @click="selectStage(stage)">
         <strong>{{ stage.title }}</strong>
         <p>{{ stage.description }}</p>
         <p class="meta">Тип: {{ stage.stage_type }} · Дедлайн: {{ stage.deadline_at || 'нет' }}</p>
@@ -16,9 +16,14 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
+const emit = defineEmits(['select-stage']);
 const stages = ref([]);
 const loading = ref(true);
 const error = ref(null);
+
+const selectStage = (stage) => {
+  emit('select-stage', stage);
+};
 
 const loadStages = async () => {
   try {
