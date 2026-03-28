@@ -1,141 +1,121 @@
-# Онлайн-платформа квеста "Стратегия успешного наставничества"
+# REST API платформы "Стратегия успешного наставничества"
 
-Этот проект реализует backend-часть образовательной платформы для конкурсного квеста кураторов учебных групп. Основной стек:
+Эта документация описывает backend REST API, реализованный в `src`. Инструкции по запуску проекта находятся в корневом `README.md`.
 
-- Laravel 10
-- MySQL в Docker
-- Docker Compose
+## Архитектура API
 
-## Структура проекта
+Backend структурирован по принципам SOLID:
 
-Основные директории:
+- Controllers отвечают только за HTTP-запросы и ответы.
+- Services содержат бизнес-логику и инкапсулируют работу с моделями.
+- Models описывают сущности базы данных и отношения между ними.
+- `App\Providers\AppServiceProvider` связывает интерфейсы сервисов с их реализациями.
 
-- `app/` — приложение Laravel
-- `database/migrations/` — миграции базы данных
-- `database/seeders/` — сидеры для начальных данных
-- `public/` — публичная точка входа
-- `resources/` — frontend-ресурсы
+## Базовый URL
 
-## Быстрый запуск
+- Локальный API: `/api`
+- Пример: `http://localhost/api/stages`
 
-В этом репозитории используется Docker Compose из корневой директории проекта.
+## Основные сущности
 
-### 1. Скопируйте `.env`
+- `QuestStage` — этапы квеста
+- `QuestTask` — задания этапов
+- `TaskSubmission` — ответы участников на задания
+- `Assessment` — оценки экспертов
+- `StageProgress` — прогресс прохождения этапов
+
+## Эндпойнты
+
+### Стадии квеста
+
+- `GET /api/stages`
+  - Возвращает список всех этапов.
+
+- `GET /api/stages/{stageId}`
+  - Возвращает данные одного этапа с задачами.
+
+- `GET /api/stages/{stageId}/tasks`
+  - Возвращает задачи конкретного этапа.
+
+### Задания
+
+- `GET /api/tasks`
+  - Список всех заданий с информацией об этапе.
+
+- `GET /api/tasks/{taskId}`
+  - Данные по конкретному заданию.
+
+### Ответы участников
+
+- `POST /api/submissions`
+  - Создаёт новую отправку задания.
+  - Тело запроса:
+
+```json
+{
+  "quest_task_id": 1,
+  "user_id": 2,
+  "answer_text": "Ответ участника",
+  "answer_data": {"steps": ["A", "B"]}
+}
+```
+
+- `GET /api/users/{userId}/progress`
+  - Возвращает прогресс пользователя по отправленным заданиям и оценкам.
+
+### Оценки экспертов
+
+- `POST /api/submissions/{submissionId}/assessments`
+  - Создаёт оценку для отправки участника.
+  - Тело запроса:
+
+```json
+{
+  "evaluator_id": 3,
+  "score": 18,
+  "comment": "Отличная логика",
+  "rubric": {"clarity": 5, "strategy": 4}
+}
+```
+
+## Контроллеры
+
+- `App\Http\Controllers\Api\StageController`
+- `App\Http\Controllers\Api\TaskController`
+- `App\Http\Controllers\Api\SubmissionController`
+- `App\Http\Controllers\Api\AssessmentController`
+
+Контроллеры используют сервисы и возвращают JSON-ответы.
+
+## Сервисы
+
+Интерфейсы и реализации:
+
+- `App\Services\Interfaces\StageServiceInterface`
+- `App\Services\Interfaces\TaskServiceInterface`
+- `App\Services\Interfaces\SubmissionServiceInterface`
+- `App\Services\Interfaces\AssessmentServiceInterface`
+
+- `App\Services\StageService`
+- `App\Services\TaskService`
+- `App\Services\SubmissionService`
+- `App\Services\AssessmentService`
+
+## Файлы конфигурации
+
+- `src/bootstrap/app.php` теперь подключает `routes/api.php`.
+- `src/routes/api.php` содержит определение API-маршрутов.
+
+## Пример запроса
 
 ```bash
-cd src
-cp .env.example .env
+curl -X POST http://localhost/api/submissions \
+  -H 'Content-Type: application/json' \
+  -d '{"quest_task_id":1,"user_id":2,"answer_text":"Ответ","answer_data":{"step":"A"}}'
 ```
 
-### 2. Настройте параметры базы данных
+## Примечания
 
-В `.env` установите следующие значения:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=db
-DB_PORT=3306
-DB_DATABASE=students
-DB_USERNAME=user
-DB_PASSWORD=password
-```
-
-Если вы хотите использовать SQLite для локальной разработки, оставьте `DB_CONNECTION=sqlite`.
-
-### 3. Запустите Docker
-
-Вернитесь в корень проекта и поднимите контейнеры:
-
-```bash
-cd /home/pr26svn/projects/prof
-docker compose up -d
-```
-
-### 4. Установите зависимости
-
-Если зависимости ещё не установлены внутри контейнера:
-
-```bash
-docker compose exec app composer install
-```
-
-### 5. Сгенерируйте ключ приложения
-
-```bash
-docker compose exec app php artisan key:generate
-```
-
-### 6. Выполните миграции и сиды
-
-```bash
-docker compose exec app php artisan migrate --seed
-```
-
-Если хотите выполнить только миграции без сидов:
-
-```bash
-docker compose exec app php artisan migrate
-```
-
-## Полезные команды
-
-Рабочая директория: `src`
-
-- `docker compose exec app php artisan migrate`
-- `docker compose exec app php artisan migrate --seed`
-- `docker compose exec app php artisan db:seed`
-- `docker compose exec app php artisan migrate:refresh --seed`
-- `docker compose exec app php artisan config:cache`
-- `docker compose exec app php artisan route:cache`
-- `docker compose exec app php artisan view:clear`
-- `docker compose exec app ./vendor/bin/phpunit`
-- `docker compose exec app php artisan tinker`
-
-Если вы работаете без Docker:
-
-```bash
-cd src
-composer install
-php artisan key:generate
-php artisan migrate --seed
-```
-
-## Что уже добавлено
-
-В проекте реализованы миграции для следующих сущностей:
-
-- `users` — расширенный профиль пользователя
-- `roles` и `role_user` — роли администратора, куратора и эксперта
-- `badges` и `badge_user` — бейджи за достижения
-- `quest_stages` и `quest_tasks` — этапы и задания квеста
-- `stage_progress`, `task_submissions`, `assessments` — прогресс, ответы участников и оценки экспертов
-
-## Настройка Git и GitHub
-
-Если репозиторий ещё не инициализирован, выполните:
-
-```bash
-git init
-git add .
-git commit -m "Initial platform setup: migrations and seeders"
-git branch -M main
-git remote add origin <REMOTE_URL>
-git push -u origin main
-```
-
-Если репозиторий уже инициализирован:
-
-```bash
-git status
-git add .
-git commit -m "Add project README, database schema and seeders"
-git push
-```
-
-## Примечание
-
-Если Docker-контейнеры уже запущены, но приложение не работает после изменений, перезапустите их:
-
-```bash
-docker compose restart
-```
+- Все ответы API возвращаются в формате JSON.
+- Валидация запросов выполняется в контроллерах через `Request::validate()`.
+- Бизнес-логика остаётся в сервисах для удобства тестирования и поддержки.
