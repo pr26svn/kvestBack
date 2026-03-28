@@ -122,10 +122,34 @@ curl -X POST http://localhost/api/submissions \
 
 ## Swagger UI
 
-API-документацию в формате OpenAPI можно просмотреть по адресу:
+Перед просмотром Swagger убедитесь, что приложение запущено.
+
+### Через Docker
+
+```bash
+cd /home/pr26svn/projects/prof
+docker compose up -d
+```
+
+Откройте в браузере:
 
 - `http://localhost/docs`
 
-Swagger JSON доступен напрямую по адресу:
+Если нужно посмотреть только спецификацию OpenAPI:
 
 - `http://localhost/swagger.json`
+
+### Без Docker
+
+```bash
+cd /home/pr26svn/projects/prof/src
+php artisan serve
+```
+
+Затем откройте:
+
+- `http://127.0.0.1:8000/docs`
+
+или
+
+- `http://127.0.0.1:8000/swagger.json`
