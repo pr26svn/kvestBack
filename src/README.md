@@ -119,3 +119,13 @@ curl -X POST http://localhost/api/submissions \
 - Все ответы API возвращаются в формате JSON.
 - Валидация запросов выполняется в контроллерах через `Request::validate()`.
 - Бизнес-логика остаётся в сервисах для удобства тестирования и поддержки.
+
+## Swagger UI
+
+API-документацию в формате OpenAPI можно просмотреть по адресу:
+
+- `http://localhost/docs`
+
+Swagger JSON доступен напрямую по адресу:
+
+- `http://localhost/swagger.json`

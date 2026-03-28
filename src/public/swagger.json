@@ -1,0 +1,336 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Mentorship Quest Platform API",
+    "description": "REST API для платформы квеста кураторов учебных групп.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/api/stages": {
+      "get": {
+        "summary": "Список этапов",
+        "responses": {
+          "200": {
+            "description": "Список этапов успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {"$ref": "#/components/schemas/QuestStage"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stages/{stageId}": {
+      "get": {
+        "summary": "Получить этап по ID",
+        "parameters": [
+          {
+            "name": "stageId",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Этап найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {"$ref": "#/components/schemas/QuestStage"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Этап не найден"
+          }
+        }
+      }
+    },
+    "/api/stages/{stageId}/tasks": {
+      "get": {
+        "summary": "Список задач этапа",
+        "parameters": [
+          {
+            "name": "stageId",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Задачи этапа получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {"$ref": "#/components/schemas/QuestTask"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks": {
+      "get": {
+        "summary": "Список заданий",
+        "responses": {
+          "200": {
+            "description": "Задания успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {"$ref": "#/components/schemas/QuestTask"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks/{taskId}": {
+      "get": {
+        "summary": "Получить задание по ID",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Задание найдено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {"$ref": "#/components/schemas/QuestTask"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {"description": "Задание не найден"}
+        }
+      }
+    },
+    "/api/submissions": {
+      "post": {
+        "summary": "Создать отправку задания",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/TaskSubmissionCreate"}
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Отправка создана",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {"$ref": "#/components/schemas/TaskSubmission"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/progress": {
+      "get": {
+        "summary": "Прогресс пользователя",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Прогресс пользователя",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {"$ref": "#/components/schemas/TaskSubmission"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/submissions/{submissionId}/assessments": {
+      "post": {
+        "summary": "Создать оценку",
+        "parameters": [
+          {
+            "name": "submissionId",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/AssessmentCreate"}
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Оценка создана",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {"$ref": "#/components/schemas/Assessment"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "QuestStage": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "code": {"type": "string"},
+          "title": {"type": "string"},
+          "description": {"type": "string"},
+          "order": {"type": "integer"},
+          "stage_type": {"type": "string"},
+          "deadline_at": {"type": "string", "format": "date"},
+          "settings": {"type": "object"},
+          "created_at": {"type": "string", "format": "date-time"},
+          "updated_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "QuestTask": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "quest_stage_id": {"type": "integer"},
+          "title": {"type": "string"},
+          "description": {"type": "string"},
+          "task_type": {"type": "string"},
+          "difficulty": {"type": "string"},
+          "order": {"type": "integer"},
+          "max_score": {"type": "number"},
+          "payload": {"type": "object"},
+          "required": {"type": "boolean"},
+          "created_at": {"type": "string", "format": "date-time"},
+          "updated_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "TaskSubmission": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "quest_task_id": {"type": "integer"},
+          "user_id": {"type": "integer"},
+          "answer_text": {"type": "string"},
+          "answer_data": {"type": "object"},
+          "status": {"type": "string"},
+          "score": {"type": "number"},
+          "feedback": {"type": "string"},
+          "submitted_at": {"type": "string", "format": "date-time"},
+          "created_at": {"type": "string", "format": "date-time"},
+          "updated_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "Assessment": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "task_submission_id": {"type": "integer"},
+          "evaluator_id": {"type": "integer"},
+          "score": {"type": "number"},
+          "comment": {"type": "string"},
+          "rubric": {"type": "object"},
+          "created_at": {"type": "string", "format": "date-time"},
+          "updated_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "TaskSubmissionCreate": {
+        "type": "object",
+        "required": ["quest_task_id", "user_id"],
+        "properties": {
+          "quest_task_id": {"type": "integer"},
+          "user_id": {"type": "integer"},
+          "answer_text": {"type": "string"},
+          "answer_data": {"type": "object"},
+          "status": {"type": "string"},
+          "score": {"type": "number"},
+          "feedback": {"type": "string"}
+        }
+      },
+      "AssessmentCreate": {
+        "type": "object",
+        "required": ["evaluator_id"],
+        "properties": {
+          "evaluator_id": {"type": "integer"},
+          "score": {"type": "number"},
+          "comment": {"type": "string"},
+          "rubric": {"type": "object"}
+        }
+      }
+    }
+  }
+}
