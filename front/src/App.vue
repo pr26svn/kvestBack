@@ -31,6 +31,7 @@ const currentUserId = 1;
 const openStage = (stage) => {
   selectedStage.value = stage;
 };
+</script>
 
 <style>
 body {
