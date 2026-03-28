@@ -74,4 +74,36 @@ class StageService implements StageServiceInterface
             ];
         })->toArray();
     }
+
+    public function createStage(array $data): object
+    {
+        return QuestStage::create($data);
+    }
+
+    public function updateStage(int $id, array $data): ?object
+    {
+        $stage = QuestStage::find($id);
+
+        if ($stage === null) {
+            return null;
+        }
+
+        $stage->fill($data);
+        $stage->save();
+
+        return $stage;
+    }
+
+    public function deleteStage(int $id): bool
+    {
+        $stage = QuestStage::find($id);
+
+        if ($stage === null) {
+            return false;
+        }
+
+        QuestTask::where('quest_stage_id', $id)->delete();
+
+        return $stage->delete();
+    }
 }

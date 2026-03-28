@@ -43,4 +43,51 @@ class StageController extends Controller
 
         return response()->json(['data' => $tasks]);
     }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:100|unique:quest_stages,code',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'order' => 'nullable|integer',
+            'stage_type' => 'nullable|string|max:100',
+            'deadline_at' => 'nullable|date',
+        ]);
+
+        $stage = $this->stageService->createStage($validated);
+
+        return response()->json(['data' => $stage], 201);
+    }
+
+    public function update(Request $request, int $stageId): JsonResponse
+    {
+        $validated = $request->validate([
+            'code' => 'nullable|string|max:100|unique:quest_stages,code,' . $stageId,
+            'title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'order' => 'nullable|integer',
+            'stage_type' => 'nullable|string|max:100',
+            'deadline_at' => 'nullable|date',
+        ]);
+
+        $stage = $this->stageService->updateStage($stageId, $validated);
+
+        if ($stage === null) {
+            return response()->json(['message' => 'Stage not found'], 404);
+        }
+
+        return response()->json(['data' => $stage]);
+    }
+
+    public function destroy(int $stageId): JsonResponse
+    {
+        $deleted = $this->stageService->deleteStage($stageId);
+
+        if (! $deleted) {
+            return response()->json(['message' => 'Stage not found'], 404);
+        }
+
+        return response()->json(['message' => 'Stage deleted']);
+    }
 }

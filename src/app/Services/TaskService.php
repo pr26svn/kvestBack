@@ -17,4 +17,34 @@ class TaskService implements TaskServiceInterface
     {
         return QuestTask::with('stage')->find($id);
     }
+
+    public function createTask(array $data): object
+    {
+        return QuestTask::create($data);
+    }
+
+    public function updateTask(int $id, array $data): ?object
+    {
+        $task = QuestTask::find($id);
+
+        if ($task === null) {
+            return null;
+        }
+
+        $task->fill($data);
+        $task->save();
+
+        return $task;
+    }
+
+    public function deleteTask(int $id): bool
+    {
+        $task = QuestTask::find($id);
+
+        if ($task === null) {
+            return false;
+        }
+
+        return $task->delete();
+    }
 }
