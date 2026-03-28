@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('task_type')->nullable();
             $table->string('difficulty')->nullable();
             $table->unsignedSmallInteger('order')->default(1);
-            $table->unsignedDecimal('max_score', 5, 2)->default(0);
+            $table->decimal('max_score', 5, 2)->unsigned()->default(0);
             $table->json('payload')->nullable();
             $table->boolean('required')->default(true);
             $table->timestamps();

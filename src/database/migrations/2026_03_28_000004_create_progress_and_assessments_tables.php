@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('quest_stage_id')->constrained('quest_stages')->cascadeOnDelete();
             $table->timestamp('started_at')->nullable();
             $table->timestamp('completed_at')->nullable();
-            $table->unsignedDecimal('score', 5, 2)->default(0);
+            $table->decimal('score', 5, 2)->unsigned()->default(0);
             $table->string('status')->default('pending');
             $table->json('meta')->nullable();
             $table->timestamps();
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->text('answer_text')->nullable();
             $table->json('answer_data')->nullable();
             $table->string('status')->default('submitted');
-            $table->unsignedDecimal('score', 5, 2)->nullable();
+            $table->decimal('score', 5, 2)->unsigned()->nullable();
             $table->text('feedback')->nullable();
             $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
@@ -39,7 +39,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('task_submission_id')->constrained('task_submissions')->cascadeOnDelete();
             $table->foreignId('evaluator_id')->constrained('users')->cascadeOnDelete();
-            $table->unsignedDecimal('score', 5, 2)->nullable();
+            $table->decimal('score', 5, 2)->unsigned()->nullable();
             $table->text('comment')->nullable();
             $table->json('rubric')->nullable();
             $table->timestamps();
