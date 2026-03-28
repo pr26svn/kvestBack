@@ -18,12 +18,12 @@
 
 ## Быстрый запуск
 
-В этом репозитории используется Docker Compose из корневой директории проекта `src/laravel`.
+В этом репозитории используется Docker Compose из корневой директории проекта.
 
 ### 1. Скопируйте `.env`
 
 ```bash
-cd src/laravel
+cd src
 cp .env.example .env
 ```
 
@@ -79,7 +79,7 @@ docker compose exec app php artisan migrate
 
 ## Полезные команды
 
-Рабочая директория: `src/laravel`
+Рабочая директория: `src`
 
 - `docker compose exec app php artisan migrate`
 - `docker compose exec app php artisan migrate --seed`
@@ -94,7 +94,7 @@ docker compose exec app php artisan migrate
 Если вы работаете без Docker:
 
 ```bash
-cd src/laravel
+cd src
 composer install
 php artisan key:generate
 php artisan migrate --seed
