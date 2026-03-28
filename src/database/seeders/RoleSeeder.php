@@ -13,6 +13,7 @@ class RoleSeeder extends Seeder
             ['name' => 'administrator', 'label' => 'Администратор', 'description' => 'Управление платформой'],
             ['name' => 'curator', 'label' => 'Куратор', 'description' => 'Участник конкурса'],
             ['name' => 'expert', 'label' => 'Эксперт', 'description' => 'Оценка заданий'],
+            ['name' => 'moderator', 'label' => 'Модератор', 'description' => 'Модерация открытых ответов'],
         ];
 
         foreach ($roles as $role) {
@@ -32,6 +33,7 @@ class RoleSeeder extends Seeder
             'admin@example.com',
             'curator@example.com',
             'expert@example.com',
+            'moderator@example.com',
         ])->get();
 
         foreach ($users as $user) {
@@ -39,6 +41,7 @@ class RoleSeeder extends Seeder
                 'admin@example.com' => 'administrator',
                 'curator@example.com' => 'curator',
                 'expert@example.com' => 'expert',
+                'moderator@example.com' => 'moderator',
                 default => null,
             };
 

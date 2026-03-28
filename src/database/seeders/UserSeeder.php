@@ -50,5 +50,18 @@ class UserSeeder extends Seeder
                 'updated_at' => $now,
             ]
         );
+
+        DB::table('users')->updateOrInsert(
+            ['email' => 'moderator@example.com'],
+            [
+                'name' => 'Модератор',
+                'display_name' => 'Модератор',
+                'email' => 'moderator@example.com',
+                'password' => Hash::make('password'),
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
     }
 }

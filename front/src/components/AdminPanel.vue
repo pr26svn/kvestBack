@@ -106,7 +106,11 @@
               <div class="row">
                 <label>
                   Тип
-                  <input v-model="taskForm.task_type" type="text" placeholder="essay" />
+                  <select v-model="taskForm.task_type">
+                    <option value="essay">Открытый ответ</option>
+                    <option value="single_choice">Тест: один вариант</option>
+                    <option value="multiple_choice">Тест: несколько вариантов</option>
+                  </select>
                 </label>
                 <label>
                   Сложность
@@ -126,6 +130,15 @@
               <label class="checkbox-row">
                 <input type="checkbox" v-model="taskForm.required" /> Обязательное
               </label>
+
+              <div v-if="taskForm.task_type === 'single_choice' || taskForm.task_type === 'multiple_choice'" class="choices-section">
+                <h4>Варианты ответа</h4>
+                <div v-for="(choice, index) in taskForm.payload.choices" :key="choice.value" class="choice-row">
+                  <input v-model="choice.label" placeholder="Текст варианта" required />
+                  <button type="button" class="small danger" @click="removeChoice(index)">Удалить</button>
+                </div>
+                <button type="button" class="small" @click="addChoice">Добавить вариант</button>
+              </div>
               <button type="submit" :disabled="savingTask">{{ savingTask ? 'Сохранение...' : 'Сохранить задание' }}</button>
             </form>
           </div>
@@ -166,11 +179,12 @@ const taskForm = reactive({
   quest_stage_id: null,
   title: '',
   description: '',
-  task_type: '',
+  task_type: 'essay',
   difficulty: '',
   order: 0,
   max_score: 0,
   required: false,
+  payload: { choices: [] },
 });
 
 const resetStageForm = () => {
@@ -188,11 +202,20 @@ const resetTaskForm = () => {
   taskForm.quest_stage_id = selectedStage?.value?.id || null;
   taskForm.title = '';
   taskForm.description = '';
-  taskForm.task_type = '';
+  taskForm.task_type = 'essay';
   taskForm.difficulty = '';
   taskForm.order = 0;
   taskForm.max_score = 0;
   taskForm.required = false;
+  taskForm.payload = { choices: [] };
+};
+
+const addChoice = () => {
+  taskForm.payload.choices.push({ label: '', value: `choice-${Date.now()}-${taskForm.payload.choices.length}` });
+};
+
+const removeChoice = (index) => {
+  taskForm.payload.choices.splice(index, 1);
 };
 
 const loadStages = async () => {
@@ -317,11 +340,12 @@ const editTask = (task) => {
   taskForm.quest_stage_id = task.quest_stage_id;
   taskForm.title = task.title || '';
   taskForm.description = task.description || '';
-  taskForm.task_type = task.task_type || '';
+  taskForm.task_type = task.task_type || 'essay';
   taskForm.difficulty = task.difficulty || '';
   taskForm.order = task.order ?? 0;
   taskForm.max_score = task.max_score ?? 0;
   taskForm.required = task.required ?? false;
+  taskForm.payload = task.payload || { choices: [] };
 };
 
 const saveTask = async () => {
@@ -343,7 +367,19 @@ const saveTask = async () => {
       order: taskForm.order,
       max_score: taskForm.max_score,
       required: taskForm.required,
+      payload: null,
     };
+
+    if (taskForm.task_type === 'single_choice' || taskForm.task_type === 'multiple_choice') {
+      payload.payload = {
+        choices: taskForm.payload.choices
+          .filter((choice) => choice.label && choice.label.trim())
+          .map((choice, index) => ({
+            label: choice.label.trim(),
+            value: choice.value || `choice-${index + 1}`,
+          })),
+      };
+    }
 
     if (taskForm.id) {
       await axios.put(`/api/admin/tasks/${taskForm.id}`, payload);

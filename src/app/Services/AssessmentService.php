@@ -25,6 +25,10 @@ class AssessmentService implements AssessmentServiceInterface
                 'score' => $data['score'],
                 'status' => 'assessed',
             ]);
+        } else {
+            $submission->update([
+                'status' => 'reviewed',
+            ]);
         }
 
         return $assessment;

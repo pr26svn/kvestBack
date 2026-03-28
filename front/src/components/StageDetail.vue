@@ -34,8 +34,39 @@
       <h3>Текущая задача</h3>
       <p><strong>{{ activeTask.title }}</strong></p>
       <p>{{ activeTask.description }}</p>
-      <textarea v-model="answer" placeholder="Напишите решение или комментарий" rows="6"></textarea>
-      <button @click="submitTask" :disabled="submitting || !answer.trim()">
+
+      <div v-if="isSingleChoice || isMultipleChoice" class="choice-panel">
+        <p class="choice-hint">Выберите {{ isSingleChoice ? 'один' : 'одни или несколько' }} вариант{{ isMultipleChoice ? 'ов' : '' }}:</p>
+        <ul class="choice-list">
+          <li v-for="choice in choices" :key="choice.value" class="choice-item">
+            <label>
+              <input
+                v-if="isSingleChoice"
+                type="radio"
+                :value="choice.value"
+                v-model="selectedOption"
+              />
+              <input
+                v-else
+                type="checkbox"
+                :value="choice.value"
+                :checked="selectedOptions.includes(choice.value)"
+                @change="toggleChoice(choice.value)"
+              />
+              <span>{{ choice.label || choice.value }}</span>
+            </label>
+          </li>
+        </ul>
+      </div>
+
+      <div v-else>
+        <textarea v-model="answer" placeholder="Напишите решение или комментарий" rows="6"></textarea>
+      </div>
+
+      <button
+        @click="submitTask"
+        :disabled="submitting || (isSingleChoice && !selectedOption) || (isMultipleChoice && selectedOptions.length === 0) || (!isSingleChoice && !isMultipleChoice && !answer.trim())"
+      >
         {{ submitting ? 'Отправка...' : 'Отправить решение' }}
       </button>
       <p class="hint">После отправки прогресс сохранится, следующая задача станет доступной.</p>
@@ -60,6 +91,8 @@ const tasks = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const answer = ref('');
+const selectedOption = ref('');
+const selectedOptions = ref([]);
 const submitting = ref(false);
 
 const loadTasks = async () => {
@@ -77,6 +110,9 @@ const loadTasks = async () => {
     });
 
     tasks.value = response.data.data || [];
+    answer.value = '';
+    selectedOption.value = '';
+    selectedOptions.value = [];
   } catch (err) {
     error.value = 'Не удалось загрузить задачи этапа.';
   } finally {
@@ -88,6 +124,9 @@ watch(() => props.stage.id, loadTasks, { immediate: true });
 
 const activeTask = computed(() => tasks.value.find((task) => task.active));
 const completedCount = computed(() => tasks.value.filter((task) => task.completed).length);
+const isSingleChoice = computed(() => activeTask.value?.task_type === 'single_choice');
+const isMultipleChoice = computed(() => activeTask.value?.task_type === 'multiple_choice');
+const choices = computed(() => activeTask.value?.payload?.choices || []);
 
 const taskStatusLabel = (task) => {
   if (task.completed) return 'Выполнено';
@@ -101,20 +140,58 @@ const taskStatusClass = (task) => {
   return 'status-locked';
 };
 
+const choiceLabel = (choice) => choice.label || choice.value;
+
+const toggleChoice = (value) => {
+  if (selectedOptions.value.includes(value)) {
+    selectedOptions.value = selectedOptions.value.filter((item) => item !== value);
+  } else {
+    selectedOptions.value.push(value);
+  }
+};
+
 const submitTask = async () => {
-  if (!activeTask.value || !answer.value.trim()) {
+  if (!activeTask.value) {
     return;
+  }
+
+  let payload = {
+    quest_task_id: activeTask.value.id,
+    user_id: props.userId,
+    status: 'submitted',
+    answer_text: null,
+    answer_data: null,
+  };
+
+  if (isSingleChoice.value) {
+    if (!selectedOption.value) {
+      error.value = 'Выберите вариант ответа.';
+      return;
+    }
+
+    payload.answer_data = { selected: selectedOption.value };
+    payload.answer_text = choiceLabel(choices.value.find((choice) => choice.value === selectedOption.value) || {});
+  } else if (isMultipleChoice.value) {
+    if (selectedOptions.value.length === 0) {
+      error.value = 'Выберите хотя бы один вариант ответа.';
+      return;
+    }
+
+    payload.answer_data = { selected: selectedOptions.value };
+    payload.answer_text = selectedOptions.value.join(', ');
+  } else {
+    if (!answer.value.trim()) {
+      return;
+    }
+
+    payload.answer_text = answer.value.trim();
+    payload.answer_data = { response: answer.value.trim() };
   }
 
   submitting.value = true;
 
   try {
-    await axios.post('/api/submissions', {
-      quest_task_id: activeTask.value.id,
-      user_id: props.userId,
-      answer_text: answer.value.trim(),
-      answer_data: { response: answer.value.trim() },
-    });
+    await axios.post('/api/submissions', payload);
 
     answer.value = '';
     await loadTasks();
