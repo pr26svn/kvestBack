@@ -6,6 +6,7 @@
         <p class="text-gray-600">Выполняйте задания вместе с командой</p>
       </div>
       <button
+        v-if="authStore.isAdmin"
         @click="showCreateForm = !showCreateForm"
         class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
       >
@@ -13,7 +14,7 @@
       </button>
     </div>
 
-    <div v-if="showCreateForm" class="bg-white p-6 rounded-lg shadow-lg">
+    <div v-if="showCreateForm && authStore.isAdmin" class="bg-white p-6 rounded-lg shadow-lg">
       <h3 class="text-lg font-semibold mb-4">Новая команда</h3>
       <form @submit.prevent="createTeam" class="space-y-4">
         <input
@@ -83,6 +84,7 @@
             Присоединиться
           </button>
           <button
+            v-if="authStore.isAdmin"
             @click.stop="deleteTeam(team)"
             class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
           >

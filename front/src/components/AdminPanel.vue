@@ -8,6 +8,139 @@
       <button class="refresh-button" @click="loadStages">Обновить список</button>
     </div>
 
+    <section class="user-panel">
+      <div class="panel-header">
+        <div>
+          <h3>Пользователи</h3>
+          <p>Создавайте новых участников и администраторов.</p>
+        </div>
+        <button class="small" @click="resetUserForm">Новый пользователь</button>
+      </div>
+
+      <div class="user-form-panel">
+        <form @submit.prevent="saveUser" class="user-form">
+          <h4>{{ userForm.id ? 'Редактировать пользователя' : 'Создать пользователя' }}</h4>
+          <div class="row">
+            <label>
+              Имя
+              <input v-model="userForm.name" type="text" placeholder="Имя" required />
+            </label>
+            <label>
+              Email
+              <input v-model="userForm.email" type="email" placeholder="Email" required />
+            </label>
+          </div>
+          <div class="row">
+            <label>
+              Пароль {{ userForm.id ? '(оставьте пустым, чтобы не менять)' : '' }}
+              <input v-model="userForm.password" type="password" :placeholder="userForm.id ? 'Новый пароль' : 'Пароль'" :required="!userForm.id" />
+            </label>
+            <label>
+              Роль
+              <select v-model="userForm.role">
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </select>
+            </label>
+          </div>
+          <div class="row gap">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              {{ savingUser ? 'Сохранение...' : (userForm.id ? 'Обновить пользователя' : 'Создать пользователя') }}
+            </button>
+            <button v-if="userForm.id" type="button" @click="resetUserForm" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
+              Отмена
+            </button>
+            <span v-if="userError" class="text-red-600">{{ userError }}</span>
+          </div>
+        </form>
+      </div>
+
+      <div class="user-list-panel">
+        <h4>Список пользователей</h4>
+        <div v-if="loadingUsers" class="loading">Загрузка пользователей...</div>
+        <ul v-else class="user-list">
+          <li v-for="user in users" :key="user.id" class="user-item">
+            <div>
+              <strong>{{ user.name }}</strong> ({{ user.email }})
+            </div>
+            <div class="user-actions">
+              <span class="badge">{{ user.role }}</span>
+              <button class="small" @click="editUser(user)">Изменить</button>
+              <button class="small danger" @click="deleteUser(user)">Удалить</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="team-management-panel">
+      <div class="panel-header">
+        <div>
+          <h3>Управление командами</h3>
+          <p>Добавляйте и удаляйте участников команд.</p>
+        </div>
+        <button class="small" @click="loadTeams">Обновить команды</button>
+      </div>
+
+      <div v-if="loadingTeams" class="loading">Загрузка команд...</div>
+      <div v-else-if="teams.length === 0" class="text-center py-8">
+        <p class="text-gray-600">Команд еще нет</p>
+      </div>
+      <div v-else class="teams-list">
+        <div
+          v-for="team in teams"
+          :key="team.id"
+          class="team-card"
+        >
+          <div class="team-header">
+            <h4>{{ team.name }}</h4>
+            <span class="member-count">{{ team.members_count }} участников</span>
+            <button class="small" @click="toggleTeamMembers(team.id)">
+              {{ teamMembers[team.id] ? 'Скрыть' : 'Показать' }} участников
+            </button>
+          </div>
+
+          <div v-if="teamMembers[team.id]" class="team-members">
+            <div v-if="loadingTeamMembers[team.id]" class="loading">Загрузка участников...</div>
+            <div v-else>
+              <div class="current-members">
+                <h5>Текущие участники:</h5>
+                <ul v-if="teamMembers[team.id].length > 0">
+                  <li v-for="member in teamMembers[team.id]" :key="member.id" class="member-item">
+                    {{ member.name }} ({{ member.email }})
+                    <button class="small danger" @click="removeUserFromTeam(team.id, member.id)">Удалить</button>
+                  </li>
+                </ul>
+                <p v-else class="text-gray-500">Нет участников</p>
+              </div>
+
+              <div class="add-member">
+                <h5>Добавить участника:</h5>
+                <select v-model="selectedUserForTeam[team.id]" class="member-select">
+                  <option value="">Выберите пользователя</option>
+                  <option
+                    v-for="user in users"
+                    :key="user.id"
+                    :value="user.id"
+                    :disabled="teamMembers[team.id]?.some(m => m.id === user.id)"
+                  >
+                    {{ user.name }} ({{ user.email }})
+                  </option>
+                </select>
+                <button
+                  class="small"
+                  @click="addSelectedUserToTeam(team.id)"
+                  :disabled="!selectedUserForTeam[team.id]"
+                >
+                  Добавить
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div class="admin-grid">
       <section class="stage-list-panel">
         <div class="panel-header">
@@ -150,6 +283,7 @@
 
 <script setup>
 import { reactive, ref, watch } from 'vue';
+import { useAuthStore } from '../stores/auth';
 import axios from 'axios';
 
 const stages = ref([]);
@@ -161,6 +295,23 @@ const savingStage = ref(false);
 const savingTask = ref(false);
 const stageError = ref(null);
 const taskError = ref(null);
+const users = ref([]);
+const loadingUsers = ref(false);
+const savingUser = ref(false);
+const userError = ref(null);
+const teams = ref([]);
+const loadingTeams = ref(false);
+const teamMembers = ref({});
+const loadingTeamMembers = ref({});
+const userForm = reactive({
+  id: null,
+  name: '',
+  email: '',
+  password: '',
+  role: 'user',
+});
+const selectedUserForTeam = ref({});
+const authStore = useAuthStore();
 
 const stageForm = reactive({
   id: null,
@@ -210,6 +361,161 @@ const resetTaskForm = () => {
   taskForm.payload = { choices: [] };
 };
 
+const resetUserForm = () => {
+  userForm.id = null;
+  userForm.name = '';
+  userForm.email = '';
+  userForm.password = '';
+  userForm.role = 'user';
+};
+
+const loadUsers = async () => {
+  loadingUsers.value = true;
+  userError.value = null;
+
+  try {
+    const response = await axios.get('/api/admin/users', {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
+    users.value = response.data.data;
+  } catch (err) {
+    userError.value = 'Не удалось загрузить пользователей.';
+  } finally {
+    loadingUsers.value = false;
+  }
+};
+
+const loadTeams = async () => {
+  loadingTeams.value = true;
+
+  try {
+    const response = await axios.get('/api/teams', {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
+    teams.value = response.data.data;
+  } catch (err) {
+    console.error('Не удалось загрузить команды:', err);
+  } finally {
+    loadingTeams.value = false;
+  }
+};
+
+const loadTeamMembers = async (teamId) => {
+  loadingTeamMembers.value[teamId] = true;
+
+  try {
+    const response = await axios.get(`/api/teams/${teamId}/members`, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
+    teamMembers.value[teamId] = response.data.data;
+  } catch (err) {
+    console.error('Не удалось загрузить участников команды:', err);
+  } finally {
+    loadingTeamMembers.value[teamId] = false;
+  }
+};
+
+const addUserToTeam = async (teamId, userId) => {
+  try {
+    // Используем тот же API, что и для присоединения, но для админа
+    await axios.post(`/api/admin/teams/${teamId}/add-user`, { user_id: userId }, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
+    await loadTeamMembers(teamId);
+  } catch (err) {
+    console.error('Не удалось добавить пользователя в команду:', err);
+  }
+};
+
+const removeUserFromTeam = async (teamId, userId) => {
+  try {
+    await axios.delete(`/api/admin/teams/${teamId}/remove-user/${userId}`, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
+    await loadTeamMembers(teamId);
+  } catch (err) {
+    console.error('Не удалось удалить пользователя из команды:', err);
+  }
+};
+
+const saveUser = async () => {
+  if (!authStore.isAdmin) {
+    userError.value = 'У вас нет прав администратора.';
+    return;
+  }
+
+  if (!authStore.token) {
+    userError.value = 'Сессия истекла. Пожалуйста, войдите снова.';
+    return;
+  }
+
+  savingUser.value = true;
+  userError.value = null;
+
+  try {
+    const payload = {
+      name: userForm.name,
+      email: userForm.email,
+      role: userForm.role,
+    };
+
+    // Добавляем пароль только если он указан (для редактирования)
+    if (userForm.password) {
+      payload.password = userForm.password;
+    }
+
+    if (userForm.id) {
+      // Обновление пользователя
+      await axios.put(`/api/admin/users/${userForm.id}`, payload, {
+        headers: { Authorization: `Bearer ${authStore.token}` }
+      });
+    } else {
+      // Создание пользователя
+      payload.password = userForm.password; // Пароль обязателен для создания
+      await axios.post('/api/admin/users', payload, {
+        headers: { Authorization: `Bearer ${authStore.token}` }
+      });
+    }
+
+    resetUserForm();
+    await loadUsers();
+  } catch (err) {
+    if (err.response?.status === 401) {
+      userError.value = 'Сессия истекла. Пожалуйста, войдите снова.';
+      authStore.logout();
+    } else if (err.response?.status === 403) {
+      userError.value = 'У вас нет прав администратора.';
+    } else {
+      userError.value = userForm.id ? 'Не удалось обновить пользователя.' : 'Не удалось создать пользователя.';
+    }
+  } finally {
+    savingUser.value = false;
+  }
+};
+
+const editUser = (user) => {
+  userForm.id = user.id;
+  userForm.name = user.name;
+  userForm.email = user.email;
+  userForm.password = ''; // Не показываем пароль
+  userForm.role = user.role;
+};
+
+const deleteUser = async (user) => {
+  if (!confirm(`Удалить пользователя "${user.name}" (${user.email})?`)) {
+    return;
+  }
+
+  try {
+    await axios.delete(`/api/admin/users/${user.id}`, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
+    await loadUsers();
+  } catch (err) {
+    userError.value = 'Не удалось удалить пользователя.';
+  }
+};
+
 const addChoice = () => {
   taskForm.payload.choices.push({ label: '', value: `choice-${Date.now()}-${taskForm.payload.choices.length}` });
 };
@@ -223,7 +529,9 @@ const loadStages = async () => {
   stageError.value = null;
 
   try {
-    const response = await axios.get('/api/stages');
+    const response = await axios.get('/api/stages', {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
     stages.value = response.data.data;
   } catch (err) {
     stageError.value = 'Не удалось загрузить этапы.';
@@ -270,9 +578,13 @@ const saveStage = async () => {
     let response;
 
     if (stageForm.id) {
-      response = await axios.put(`/api/admin/stages/${stageForm.id}`, payload);
+      response = await axios.put(`/api/admin/stages/${stageForm.id}`, payload, {
+        headers: { Authorization: `Bearer ${authStore.token}` }
+      });
     } else {
-      response = await axios.post('/api/admin/stages', payload);
+      response = await axios.post('/api/admin/stages', payload, {
+        headers: { Authorization: `Bearer ${authStore.token}` }
+      });
     }
 
     await loadStages();
@@ -292,7 +604,9 @@ const deleteStage = async (stage) => {
   }
 
   try {
-    await axios.delete(`/api/admin/stages/${stage.id}`);
+    await axios.delete(`/api/admin/stages/${stage.id}`, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
     if (selectedStage.value && selectedStage.value.id === stage.id) {
       selectedStage.value = null;
       resetStageForm();
@@ -314,7 +628,9 @@ const loadTasks = async () => {
   taskError.value = null;
 
   try {
-    const response = await axios.get(`/api/stages/${selectedStage.value.id}/tasks`);
+    const response = await axios.get(`/api/stages/${selectedStage.value.id}/tasks`, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
     tasks.value = response.data.data;
   } catch (err) {
     taskError.value = 'Не удалось загрузить задания.';
@@ -382,9 +698,13 @@ const saveTask = async () => {
     }
 
     if (taskForm.id) {
-      await axios.put(`/api/admin/tasks/${taskForm.id}`, payload);
+      await axios.put(`/api/admin/tasks/${taskForm.id}`, payload, {
+        headers: { Authorization: `Bearer ${authStore.token}` }
+      });
     } else {
-      await axios.post('/api/admin/tasks', payload);
+      await axios.post('/api/admin/tasks', payload, {
+        headers: { Authorization: `Bearer ${authStore.token}` }
+      });
     }
 
     await loadTasks();
@@ -402,14 +722,47 @@ const deleteTask = async (task) => {
   }
 
   try {
-    await axios.delete(`/api/admin/tasks/${task.id}`);
+    await axios.delete(`/api/admin/tasks/${task.id}`, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
     await loadTasks();
   } catch (err) {
     taskError.value = 'Не удалось удалить задание.';
   }
 };
 
+const toggleTeamMembers = async (teamId) => {
+  if (teamMembers.value[teamId]) {
+    // Скрываем участников
+    teamMembers.value[teamId] = null;
+  } else {
+    // Загружаем участников
+    await loadTeamMembers(teamId);
+  }
+};
+
+const addSelectedUserToTeam = async (teamId) => {
+  const userId = selectedUserForTeam.value[teamId];
+  if (!userId) return;
+
+  try {
+    await axios.post(`/api/admin/teams/${teamId}/add-user`, {
+      user_id: userId
+    }, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
+
+    selectedUserForTeam.value[teamId] = '';
+    await loadTeamMembers(teamId);
+    await loadTeams(); // Обновляем счетчик участников
+  } catch (err) {
+    alert('Не удалось добавить пользователя в команду.');
+  }
+};
+
 loadStages();
+loadUsers();
+loadTeams();
 </script>
 
 <style scoped>
@@ -428,6 +781,69 @@ loadStages();
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 22px;
+}
+
+.user-panel {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  margin-bottom: 22px;
+}
+
+.user-form-panel,
+.user-list-panel {
+  margin-top: 18px;
+}
+
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-form label {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.user-form input,
+.user-form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  margin-top: 6px;
+}
+
+.row.gap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.badge {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 0.9rem;
 }
 
 .stage-list-panel,
@@ -570,5 +986,78 @@ button[type="submit"],
 
 .error {
   color: #b91c1c;
+}
+
+.team-management-panel {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 22px;
+  margin-bottom: 24px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+.teams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.team-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.team-header h4 {
+  margin: 0;
+  color: #111827;
+}
+
+.member-count {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.team-members {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 12px;
+}
+
+.current-members h5,
+.add-member h5 {
+  margin: 8px 0;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.member-select {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-right: 8px;
+  min-width: 200px;
+}
+
+.add-member {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
 }
 </style>

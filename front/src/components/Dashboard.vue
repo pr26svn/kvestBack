@@ -103,7 +103,7 @@ const selectedStage = ref(null);
 const tabs = [
   { id: 'user', name: '📚 Этапы и задания' },
   { id: 'teams', name: '👥 Мои команды' },
-  { id: 'admin', name: '⚙️ Администрирование' },
+  ...(authStore.isAdmin ? [{ id: 'admin', name: '⚙️ Администрирование' }] : []),
 ];
 
 const openStage = (stage) => {

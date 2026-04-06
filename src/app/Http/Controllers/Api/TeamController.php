@@ -22,6 +22,11 @@ class TeamController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        // Проверяем, что пользователь - администратор
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Only administrators can create teams'], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -125,5 +130,37 @@ class TeamController extends Controller
         $user = Auth::user();
         $teams = $user->teams()->withCount('members')->get();
         return response()->json(['data' => $teams]);
+    }
+
+    public function addUser(Request $request, Team $team): JsonResponse
+    {
+        // Проверяем, что пользователь - администратор
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Only administrators can manage team members'], 403);
+        }
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $userId = $validated['user_id'];
+
+        if (!$team->members()->where('user_id', $userId)->exists()) {
+            $team->members()->attach($userId);
+        }
+
+        return response()->json(['message' => 'User added to team successfully']);
+    }
+
+    public function removeUser(Request $request, Team $team, User $user): JsonResponse
+    {
+        // Проверяем, что пользователь - администратор
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Only administrators can manage team members'], 403);
+        }
+
+        $team->members()->detach($user->id);
+
+        return response()->json(['message' => 'User removed from team successfully']);
     }
 }

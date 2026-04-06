@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TeamController;
+use App\Http\Controllers\Api\UserController;
 
 // Публичные маршруты авторизации
 Route::post('login', [AuthController::class, 'login']);
@@ -39,6 +40,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Админ
     Route::prefix('admin')->group(function () {
+        Route::get('users', [UserController::class, 'index']);
+        Route::post('users', [UserController::class, 'store']);
+        Route::get('users/{user}', [UserController::class, 'show']);
+        Route::put('users/{user}', [UserController::class, 'update']);
+        Route::delete('users/{user}', [UserController::class, 'destroy']);
+
+        Route::post('teams/{team}/add-user', [TeamController::class, 'addUser']);
+        Route::delete('teams/{team}/remove-user/{user}', [TeamController::class, 'removeUser']);
+
         Route::post('stages', [StageController::class, 'store']);
         Route::put('stages/{stageId}', [StageController::class, 'update']);
         Route::delete('stages/{stageId}', [StageController::class, 'destroy']);

@@ -99,6 +99,11 @@ docker compose exec app php artisan migrate
 - `docker compose exec app php artisan db:seed`
 - `docker compose exec app php artisan migrate:refresh --seed`
 
+## CI / GitHub Actions
+
+- Автоматические тесты backend запускаются в GitHub Actions через `.github/workflows/laravel.yml`
+- Триггер срабатывает на `push` и `pull_request` в ветку `main`, а также вручную через `workflow_dispatch`
+
 ---
 
 # 📖 Руководство пользователя
@@ -235,11 +240,32 @@ docker compose exec app php artisan migrate
 
 ## 📋 API документация
 
-Полная документация API доступна по адресу: `http://localhost/swagger`
+Полная документация API доступна по адресу: `http://localhost/docs`
 
 Для тестирования API используйте:
-- **Swagger UI**: `http://localhost/swagger`
+- **Swagger UI**: `http://localhost/docs`
 - **Postman коллекция**: доступна в репозитории
+
+## 🔐 Админ функции
+
+Администраторы платформы имеют расширенные возможности для управления:
+
+### Управление пользователями
+- **Просмотр всех пользователей**: `GET /api/admin/users`
+- **Создание пользователей**: `POST /api/admin/users`
+- **Просмотр пользователя**: `GET /api/admin/users/{id}`
+- **Обновление пользователей**: `PUT /api/admin/users/{id}`
+- **Удаление пользователей**: `DELETE /api/admin/users/{id}`
+
+### Управление командами
+- **Создание команд**: `POST /api/teams` (только для админов)
+- **Добавление пользователей в команды**: `POST /api/admin/teams/{team}/add-user`
+- **Удаление пользователей из команд**: `DELETE /api/admin/teams/{team}/remove-user/{user}`
+- **Управление этапами и заданиями**: полные CRUD операции
+
+### Ролевая модель
+- **user**: обычный пользователь (участник квеста)
+- **admin**: администратор (управление платформой)
 
 ## 🎯 Советы по успешному участию
 

@@ -14,7 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\Team;
 use App\Models\TaskSubmission;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'role'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -49,6 +49,11 @@ class User extends Authenticatable
         return $this->hasMany(TaskSubmission::class);
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
     public function hasRole(string $role): bool
     {
         return $this->roles()->where('name', $role)->exists();
@@ -57,10 +62,5 @@ class User extends Authenticatable
     public function isModerator(): bool
     {
         return $this->hasRole('moderator');
-    }
-
-    public function isExpert(): bool
-    {
-        return $this->hasRole('expert');
     }
 }
