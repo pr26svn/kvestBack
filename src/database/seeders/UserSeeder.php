@@ -13,12 +13,13 @@ class UserSeeder extends Seeder
         $now = now();
 
         DB::table('users')->updateOrInsert(
-            ['email' => 'admin@example.com'],
+            ['email' => 'admin@test.com'],
             [
                 'name' => 'Администратор',
                 'display_name' => 'Админ',
-                'email' => 'admin@example.com',
+                'email' => 'admin@test.com',
                 'password' => Hash::make('password'),
+                'role' => 'admin',
                 'status' => 'active',
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -32,6 +33,7 @@ class UserSeeder extends Seeder
                 'display_name' => 'Куратор',
                 'email' => 'curator@example.com',
                 'password' => Hash::make('password'),
+                'role' => 'user',
                 'status' => 'active',
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -45,6 +47,7 @@ class UserSeeder extends Seeder
                 'display_name' => 'Эксперт',
                 'email' => 'expert@example.com',
                 'password' => Hash::make('password'),
+                'role' => 'user',
                 'status' => 'active',
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -58,10 +61,28 @@ class UserSeeder extends Seeder
                 'display_name' => 'Модератор',
                 'email' => 'moderator@example.com',
                 'password' => Hash::make('password'),
+                'role' => 'user',
                 'status' => 'active',
                 'created_at' => $now,
                 'updated_at' => $now,
             ]
         );
+
+        // Тестовые участники для демонстрации
+        for ($i = 1; $i <= 5; $i++) {
+            DB::table('users')->updateOrInsert(
+                ['email' => "user{$i}@test.com"],
+                [
+                    'name' => "Пользователь {$i}",
+                    'display_name' => "User {$i}",
+                    'email' => "user{$i}@test.com",
+                    'password' => Hash::make('password'),
+                    'role' => 'user',
+                    'status' => 'active',
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]
+            );
+        }
     }
 }
