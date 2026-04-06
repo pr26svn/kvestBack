@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('me', [AuthController::class, 'me']);
 
     // Команды
+    Route::get('teams/rankings', [TeamController::class, 'rankings']);
     Route::get('teams', [TeamController::class, 'index']);
     Route::post('teams', [TeamController::class, 'store']);
     Route::get('teams/{team}', [TeamController::class, 'show']);
@@ -34,7 +35,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('teams/{team}/join', [TeamController::class, 'join']);
     Route::get('teams/{team}/members', [TeamController::class, 'members']);
     Route::get('teams/{team}/progress', [TeamController::class, 'progress']);
-    Route::get('teams/rankings', [TeamController::class, 'rankings']);
     Route::get('users/teams', [TeamController::class, 'userTeams']);
 
     // Админ

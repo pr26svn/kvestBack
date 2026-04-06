@@ -12,10 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class TeamController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum');
-    }
+    // Убрал middleware из конструктора - он должен быть в маршрутах
 
     public function index(): JsonResponse
     {
@@ -100,10 +97,11 @@ class TeamController extends Controller
             ->get()
             ->map(function ($team) {
                 $completedCount = $team->members()
-                    ->whereHas('submissions', function ($query) {
+                    ->withCount(['submissions' => function ($query) {
                         $query->where('status', 'completed');
-                    })
-                    ->count();
+                    }])
+                    ->get()
+                    ->sum('submissions_count');
 
                 $totalMembers = $team->members_count ?? 1;
                 $progress = round(($completedCount / ($totalMembers * 10)) * 100, 0); // 10 = примерное кол-во заданий
