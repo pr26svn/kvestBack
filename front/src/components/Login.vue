@@ -58,13 +58,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const router = useRouter();
-const form = ref({ email: '', password: '' });
+const form = reactive({ email: '', password: '' });
 const loading = ref(false);
 const error = ref('');
 
