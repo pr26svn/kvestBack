@@ -317,4 +317,3 @@ const submitTask = async () => {
   }
 };
 </script>
-</style>
