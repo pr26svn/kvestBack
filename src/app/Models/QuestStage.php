@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class QuestStage extends Model
 {
@@ -27,5 +28,10 @@ class QuestStage extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(QuestTask::class, 'quest_stage_id');
+    }
+
+    public function content(): HasOne
+    {
+        return $this->hasOne(StageContent::class, 'quest_stage_id');
     }
 }

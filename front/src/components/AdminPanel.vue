@@ -277,6 +277,59 @@
           </div>
         </div>
       </section>
+
+      <!-- Управление контентом этапов -->
+      <section class="content-management-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Контент этапов</h3>
+            <p>Загрузите HTML контент для интерактивных этапов (1-5)</p>
+          </div>
+        </div>
+
+        <div class="content-form-panel">
+          <form @submit.prevent="saveStageContent" class="content-form">
+            <h4>Редактировать контент этапа</h4>
+            
+            <label>
+              Выберите этап
+              <select v-model="contentForm.stageId" required @change="loadStageContent">
+                <option value="">-- Выберите этап --</option>
+                <option v-for="stage in stages" :key="stage.id" :value="stage.id">
+                  {{  stage.order }}. {{ stage.title }}
+                </option>
+              </select>
+            </label>
+
+            <label>
+              HTML Контент
+              <textarea 
+                v-model="contentForm.html_content" 
+                placeholder="Вставьте HTML контент для этапа" 
+                rows="15"
+                class="w-full font-mono text-sm"
+              ></textarea>
+              <small class="text-gray-600">Поддерживается полный HTML с styles и JavaScript</small>
+            </label>
+
+            <label>
+              <input type="checkbox" v-model="contentForm.is_active" />
+              Контент активен
+            </label>
+
+            <button type="submit" :disabled="savingContent">
+              {{ savingContent ? 'Сохранение...' : 'Сохранить контент' }}
+            </button>
+            <button v-if="contentForm.stageId" type="button" @click="deleteStageContent" :disabled="savingContent" class="danger">
+              Удалить контент
+            </button>
+          </form>
+        </div>
+
+        <div v-if="contentMessage" :class="['message', contentMessage.type]">
+          {{ contentMessage.text }}
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -760,6 +813,107 @@ const addSelectedUserToTeam = async (teamId) => {
   }
 };
 
+// Content Management
+const contentForm = reactive({
+  stageId: null,
+  html_content: '',
+  is_active: true,
+});
+
+const savingContent = ref(false);
+const contentMessage = ref(null);
+
+const resetContentForm = () => {
+  contentForm.stageId = null;
+  contentForm.html_content = '';
+  contentForm.is_active = true;
+  contentMessage.value = null;
+};
+
+const loadStageContent = async () => {
+  if (!contentForm.stageId) return;
+
+  try {
+    const response = await axios.get(`/api/admin/stages/${contentForm.stageId}/content`, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
+    
+    if (response.data.data) {
+      contentForm.html_content = response.data.data.html_content || '';
+      contentForm.is_active = response.data.data.is_active !== false;
+    } else {
+      contentForm.html_content = '';
+      contentForm.is_active = true;
+    }
+  } catch (err) {
+    // Content not found - it's okay, show empty form
+    contentForm.html_content = '';
+    contentForm.is_active = true;
+  }
+};
+
+const saveStageContent = async () => {
+  if (!contentForm.stageId) {
+    contentMessage.value = { type: 'error', text: 'Выберите этап' };
+    return;
+  }
+
+  if (!contentForm.html_content.trim()) {
+    contentMessage.value = { type: 'error', text: 'Контент не может быть пустым' };
+    return;
+  }
+
+  savingContent.value = true;
+  contentMessage.value = null;
+
+  try {
+    const response = await axios.post(
+      `/api/admin/stages/${contentForm.stageId}/content`,
+      {
+        html_content: contentForm.html_content,
+        content_type: 'html',
+        is_active: contentForm.is_active,
+      },
+      {
+        headers: { Authorization: `Bearer ${authStore.token}` }
+      }
+    );
+
+    contentMessage.value = { type: 'success', text: 'Контент сохранен успешно!' };
+    setTimeout(() => {
+      contentMessage.value = null;
+    }, 3000);
+  } catch (err) {
+    contentMessage.value = { type: 'error', text: 'Ошибка при сохранении контента' };
+    console.error(err);
+  } finally {
+    savingContent.value = false;
+  }
+};
+
+const deleteStageContent = async () => {
+  if (!confirm('Вы уверены? Это удалит контент этапа.')) return;
+
+  savingContent.value = true;
+
+  try {
+    await axios.delete(
+      `/api/admin/stages/${contentForm.stageId}/content`,
+      {
+        headers: { Authorization: `Bearer ${authStore.token}` }
+      }
+    );
+
+    contentMessage.value = { type: 'success', text: 'Контент удален!' };
+    resetContentForm();
+  } catch (err) {
+    contentMessage.value = { type: 'error', text: 'Ошибка при удалении контента' };
+    console.error(err);
+  } finally {
+    savingContent.value = false;
+  }
+};
+
 loadStages();
 loadUsers();
 loadTeams();
@@ -1059,5 +1213,71 @@ button[type="submit"],
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid #f3f4f6;
+}
+
+.content-management-panel {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  margin-bottom: 22px;
+}
+
+.content-form-panel {
+  margin-top: 18px;
+}
+
+.content-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.content-form h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.content-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.content-form textarea {
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  margin: 8px 0;
+}
+
+.content-form small {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.message.success {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.message.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
 }
 </style>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест: Этап 2 - Профилактика рисков</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #6c5ce7;
+            min-height: 100vh; padding: 20px;
+            color: #333;
+        }
+        .container { max-width: 900px; margin: 0 auto; text-align: center; }
+        button {
+            padding: 12px 30px; margin: 8px; border: none;
+            border-radius: 25px; font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; font-family: 'Roboto', sans-serif;
+        }
+        .btn-primary { background: #4facfe; color: white; }
+        .btn-primary:hover { background: #00f2fe; transform: translateY(-2px); }
+        .btn-secondary { background: #ff6b6b; color: white; }
+        .btn-secondary:hover { background: #ff5252; }
+        .btn-next { background: #00d4aa; color: white; margin-top: 15px; }
+        .btn-next:hover { background: #00e6b8; }
+        .btn-hint { background: #ffa726; color: white; font-size: 12px; padding: 8px 20px; }
+        .info-btn { background: #6c5ce7; color: white; font-size: 12px; padding: 6px 12px; margin: 2px; }
+
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { color: white; font-size: 2.5em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 10px; }
+        #user-info { color: white; font-size: 1.2em; margin-bottom: 10px; }
+        #total-score {
+            font-size: 24px; font-weight: 700; color: #fff;
+            margin: 15px 0; padding: 12px 25px;
+            background: rgba(0,0,0,0.3); border-radius: 20px;
+        }
+
+        .zone { display: none !important; background: rgba(255,255,255,0.95); border-radius: 20px; margin: 20px 0; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        .zone.active { display: block !important; animation: slideIn 0.5s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .scenario { background-color: #6de8ef; padding: 20px; border-radius: 15px; margin-bottom: 20px; font-style: italic; }
+        .main-question { background-color: #ffb9b9; color: #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; font-size: 1.2em; font-weight: 600; }
+        .question-title { color: #4facfe; font-size: 1.6em; margin-bottom: 15px; text-align: center; font-weight: 700; }
+
+        .task label { display: block; margin: 10px 0; font-weight: 400; cursor: pointer; padding: 12px; border-radius: 10px; transition: all 0.3s; border: 2px solid transparent; }
+        .task label:hover { background: #f0f8ff; border-color: #4facfe; transform: translateX(5px); }
+        .task input[type="checkbox"]:checked + span { color: #00d4aa; font-weight: 600; }
+
+        textarea, input[type="text"] { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-family: 'Roboto', sans-serif; font-size: 14px; margin: 10px 0; transition: all 0.3s; }
+        textarea:focus, input[type="text"]:focus { border-color: #4facfe; outline: none; box-shadow: 0 0 0 3px rgba(79,172,254,0.1); }
+        textarea { height: 100px; resize: vertical; }
+
+        .info-panel { background: rgba(255,255,255,0.8); border-radius: 12px; padding: 15px; margin: 10px 0; display: none; }
+        .info-panel.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; backdrop-filter: blur(5px); }
+        .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%); border-radius: 25px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.3); position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+        .modal-close:hover { color: #ff6b6b; }
+
+        @media (max-width: 768px) { body { padding: 10px; } header h1 { font-size: 2em; } }
+    </style>
+</head>
+<body onload="startQuest()">
+    <div class="container">
+        <header>
+            <h1>Этап 2: Лабиринт Профилактики</h1>
+            <div id="user-info">Студент</div>
+        </header>
+
+        <!-- ЗОНА 1 -->
+        <div class="zone active" id="zone1">
+            <div class="scenario">
+                Студент-юрист Иван К. стал замкнутым, резко изменил имидж, начал критиковать государственные институты и искать контакты с радикальными группами.
+            </div>
+            <div class="main-question">
+                Выберите <strong>ТОЧНО 3 ПРИЗНАКА РАДИКАЛИЗАЦИИ</strong> из предложенных:
+            </div>
+            <div class="question-title">Зона 1: Профилактика терроризма</div>
+            <div class="task">
+                <label><input type="checkbox" data-zone="zone1" onchange="validateZone1()"> Изменение внешнего вида и стиля одежды</label>
+                <label><input type="checkbox" data-zone="zone1" onchange="validateZone1()"> Резкое увлечение религией</label>
+                <label><input type="checkbox" data-zone="zone1" onchange="validateZone1()"> Конфликты с окружающими</label>
+                <label><input type="checkbox" data-zone="zone1" onchange="validateZone1()"> Поиск контактов с радикальными группами</label>
+                <label><input type="checkbox" data-zone="zone1" onchange="validateZone1()"> Увеличение времени в интернете</label>
+                <label><input type="checkbox" data-zone="zone1" onchange="validateZone1()"> Снижение успеваемости</label>
+                <label><input type="checkbox" data-zone="zone1" onchange="validateZone1()"> Участие в несанкционированных акциях</label>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <label>План действий (3 шага по 40+ символов каждый):</label>
+                <textarea id="zone1-plan" placeholder="1. ...
+2. ...
+3. ..." oninput="checkZone1Plan()"></textarea>
+            </div>
+            <div style="margin: 20px 0;">
+                <label>Обоснование плана (40+ символов):</label>
+                <textarea id="zone1-justify" placeholder="Обоснование..." oninput="checkZone1Justify()"></textarea>
+            </div>
+
+            <button onclick="nextZone('zone1')" class="btn-next" id="next-zone1" style="display:none;">➡️ Зона 2</button>
+        </div>
+
+        <!-- ЗОНА 2 -->
+        <div class="zone" id="zone2">
+            <div class="scenario">
+                Студенты-повара группы 205 регулярно употребляют алкоголь. Запах спиртного, опоздания, ошибки в блюдах, конфликты.
+            </div>
+            <div class="main-question">
+                Выберите <strong>ТОЧНО 3 ПРИЗНАКА</strong>:
+            </div>
+            <div class="question-title">Зона 2: Профилактика веществ</div>
+            <div class="task">
+                <label><input type="checkbox" onchange="validateZone2()"> Запах алкоголя</label>
+                <label><input type="checkbox" onchange="validateZone2()"> Постоянные опоздания</label>
+                <label><input type="checkbox" onchange="validateZone2()"> Ошибки в работе</label>
+                <label><input type="checkbox" onchange="validateZone2()"> Конфликты</label>
+                <label><input type="checkbox" onchange="validateZone2()"> Снижение качества</label>
+                <label><input type="checkbox" onchange="validateZone2()"> Частые больничные</label>
+            </div>
+
+            <button onclick="nextZone('zone2')" class="btn-next" id="next-zone2" style="display:none;">➡️ Зона 3</button>
+        </div>
+
+        <!-- ЗОНА 3 -->
+        <div class="zone" id="zone3">
+            <div class="scenario">
+                Студент Алексей С. написал в чате: "Жизнь бессмысленна". Заметны подавленное состояние, бессонница, потеря интереса.
+            </div>
+            <div class="question-title">Зона 3: Профилактика суицида</div>
+            <div class="task">
+                <label><textarea id="zone3-answer" placeholder="Опишите алгоритм действий..." style="width: 100%; height: 100px;"></textarea></label>
+            </div>
+
+            <button onclick="nextZone('zone3')" class="btn-next" id="next-zone3" style="display:none;">➡️ Зона 4</button>
+        </div>
+
+        <!-- ЗОНА 4 -->
+        <div class="zone" id="zone4">
+            <div class="scenario">
+                Первокурсники испытывают трудности адаптации: 68% пропускают лекции, 45% не общаются, 32% планируют отчисление.
+            </div>
+            <div class="question-title">Зона 4: Социальная адаптация</div>
+            <div class="task">
+                <label><textarea id="zone4-answer" placeholder="Опишите систему адаптации..." style="width: 100%; height: 100px;"></textarea></label>
+            </div>
+
+            <button onclick="completeStage()" class="btn-secondary">✓ Завершить этап</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="hint-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeHint()">&times;</button>
+            <div id="hint-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let zoneScores = {1: 0, 2: 0, 3: 0, 4: 0};
+
+        function startQuest() {
+            const userName = localStorage.getItem('userName') || 'Студент';
+            document.getElementById('user-info').textContent = userName;
+        }
+
+        function validateZone1() {
+            const checkboxes = document.querySelectorAll('#zone1 input[type="checkbox"]:checked');
+            const plan = document.getElementById('zone1-plan').value;
+            const justify = document.getElementById('zone1-justify').value;
+
+            let score = 0;
+            if (checkboxes.length === 3) score += 6;
+            if (plan.split('\n').filter(l => l.trim().length >= 40).length >= 3) score += 2;
+            if (justify.length >= 40) score += 1;
+
+            zoneScores[1] = score;
+            document.getElementById('next-zone1').style.display = score >= 6 ? 'inline-block' : 'none';
+        }
+
+        function checkZone1Plan() {
+            validateZone1();
+        }
+
+        function checkZone1Justify() {
+            validateZone1();
+        }
+
+        function validateZone2() {
+            const checkboxes = document.querySelectorAll('#zone2 input[type="checkbox"]:checked');
+            zoneScores[2] = checkboxes.length === 3 ? 9 : Math.min(checkboxes.length * 3, 9);
+            document.getElementById('next-zone2').style.display = zoneScores[2] >= 6 ? 'inline-block' : 'none';
+        }
+
+        function validateZone3() {
+            const text = document.getElementById('zone3-answer').value;
+            zoneScores[3] = text.length >= 80 ? 9 : Math.floor(text.length / 10);
+            document.getElementById('next-zone3').style.display = text.length >= 80 ? 'inline-block' : 'none';
+        }
+
+        function nextZone(zoneId) {
+            if (zoneId === 'zone1') validateZone1();
+            if (zoneId === 'zone2') validateZone2();
+            if (zoneId === 'zone3') validateZone3();
+
+            document.getElementById(zoneId).classList.remove('active');
+            const zoneNum = parseInt(zoneId.replace('zone', '')) + 1;
+            document.getElementById('zone' + zoneNum).classList.add('active');
+        }
+
+        function completeStage() {
+            const text = document.getElementById('zone4-answer').value;
+            zoneScores[4] = text.length >= 80 ? 9 : Math.floor(text.length / 10);
+
+            const total = Object.values(zoneScores).reduce((a, b) => a + b, 0);
+
+            // Сохраняем результат
+            localStorage.setItem('stage2_score', total);
+            localStorage.setItem('stage2_completed', true);
+
+            // Отправляем на backend
+            fetch('/api/stage-submissions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('authToken') },
+                body: JSON.stringify({ stage_id: 2, score: total })
+            }).catch(e => console.log('Score sent'));
+
+            alert(`✓ Этап 2 завершен! Баллы: ${total}/36`);
+            window.location.href = '/';
+        }
+
+        function closeHint() {
+            document.getElementById('hint-modal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>

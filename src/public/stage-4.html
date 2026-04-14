@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Этап 4: Организация воспитательной работы</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+        h1 { color: #667eea; margin-bottom: 30px; text-align: center; }
+        .zone { margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 5px solid #667eea; }
+        textarea, input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-family: inherit; }
+        textarea:focus, input:focus { border-color: #667eea; outline: none; }
+        button { padding: 12px 30px; margin-top: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+        .score { text-align: center; font-size: 1.5em; color: #667eea; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Этап 4: Организация воспитательной работы</h1>
+
+        <div class="zone">
+            <h2>Модуль 4: Конструктор профилактического мероприятия</h2>
+            <p>Спланируйте собственное воспитательное мероприятие для своей группы.</p>
+
+            <label><strong>Название мероприятия:</strong></label>
+            <input type="text" id="eventName" placeholder="Введите название...">
+
+            <label><strong>Целевая аудитория:</strong></label>
+            <input type="text" id="audience" placeholder="Для кого это мероприятие?...">
+
+            <label><strong>Описание плана проведения:</strong></label>
+            <textarea id="plan" placeholder="Подробно спланируйте проведение..."></textarea>
+
+            <label><strong>Ожидаемые результаты и показатели эффективности:</strong></label>
+            <textarea id="results" placeholder="Какие результаты вы ожидаете?..."></textarea>
+
+            <button onclick="completeStage4()">✓ Завершить этап</button>
+            <div class="score" id="score">Баллы: 0/40</div>
+        </div>
+    </div>
+
+    <script>
+        function completeStage4() {
+            const name = document.getElementById('eventName').value;
+            const audience = document.getElementById('audience').value;
+            const plan = document.getElementById('plan').value;
+            const results = document.getElementById('results').value;
+
+            let score = 0;
+            if (name.length >= 10) score += 10;
+            if (audience.length >= 20) score += 10;
+            if (plan.length >= 100) score += 10;
+            if (results.length >= 80) score += 10;
+
+            document.getElementById('score').textContent = `Баллы: ${score}/40`;
+
+            localStorage.setItem('stage4_score', score);
+            localStorage.setItem('stage4_completed', true);
+
+            fetch('/api/stage-submissions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('authToken') },
+                body: JSON.stringify({ stage_id: 4, score: score })
+            }).catch(e => console.log('Score sent'));
+
+            alert(`✓ Этап 4 завершен! Баллы: ${score}/40`);
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

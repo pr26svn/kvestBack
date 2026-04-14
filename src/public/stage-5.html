@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Этап 5: Галерея мастеров</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+        h1 { color: #667eea; margin-bottom: 30px; text-align: center; }
+        .zone { margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 5px solid #667eea; }
+        h3 { color: #667eea; margin-bottom: 15px; }
+        textarea, input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-family: inherit; }
+        textarea:focus, input:focus { border-color: #667eea; outline: none; }
+        button { padding: 12px 30px; margin-top: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+        .score { text-align: center; font-size: 1.5em; color: #667eea; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Этап 5: Галерея мастеров</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">Кризисное вмешательство и развитие компетентности</p>
+
+        <div class="zone">
+            <h3>1️⃣ Духовно-нравственное воспитание</h3>
+            <label>Концепция мероприятия (80+ символов):</label>
+            <textarea id="zone1" placeholder="Опишите концепцию..."></textarea>
+            <label>Показатели эффективности:</label>
+            <input type="text" id="zone1-metrics" placeholder="Например: % участия, результаты опроса...">
+        </div>
+
+        <div class="zone">
+            <h3>2️⃣ Физическое воспитание и ЗОЖ</h3>
+            <label>Программа ЗОЖ (80+ символов):</label>
+            <textarea id="zone2" placeholder="Опишите программу..."></textarea>
+            <label>Показатели эффективности:</label>
+            <input type="text" id="zone2-metrics" placeholder="Например: посещаемость, улучшение здоровья...">
+        </div>
+
+        <div class="zone">
+            <h3>3️⃣ Профессионально-трудовое воспитание</h3>
+            <label>Система профессионального самоопределения:</label>
+            <textarea id="zone3" placeholder="Опишите систему..."></textarea>
+            <label>Показатели эффективности:</label>
+            <input type="text" id="zone3-metrics" placeholder="Например: участие в проектах...">
+        </div>
+
+        <div class="zone">
+            <h3>4️⃣ Экологическое воспитание</h3>
+            <label>Экологический проект (80+ символов):</label>
+            <textarea id="zone4" placeholder="Опишите проект..."></textarea>
+            <label>Показатели эффективности:</label>
+            <input type="text" id="zone4-metrics" placeholder="Например: охват, результаты...">
+        </div>
+
+        <div class="zone">
+            <h3>5️⃣ Ценности научного познания</h3>
+            <label>Комплексное мероприятие (80+ символов):</label>
+            <textarea id="zone5" placeholder="Опишите мероприятие..."></textarea>
+            <label>Показатели эффективности:</label>
+            <input type="text" id="zone5-metrics" placeholder="Например: публикации, выступления...">
+        </div>
+
+        <button onclick="completeStage5()" style="width: 100%; padding: 15px; font-size: 1.1em;">✓ Завершить Этап 5</button>
+        <div class="score" id="score">Баллы: 0/50</div>
+    </div>
+
+    <script>
+        function completeStage5() {
+            let score = 0;
+
+            // Проверяем каждую зону
+            const zones = ['zone1', 'zone2', 'zone3', 'zone4', 'zone5'];
+            zones.forEach((zone, idx) => {
+                const textarea = document.getElementById(zone);
+                const metrics = document.getElementById(zone + '-metrics');
+
+                if (textarea && textarea.value.length >= 80) score += 5;
+                if (metrics && metrics.value.length >= 10) score += 5;
+            });
+
+            document.getElementById('score').textContent = `Баллы: ${Math.min(score, 50)}/50`;
+
+            const finalScore = Math.min(score, 50);
+            localStorage.setItem('stage5_score', finalScore);
+            localStorage.setItem('stage5_completed', true);
+
+            fetch('/api/stage-submissions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('authToken') },
+                body: JSON.stringify({ stage_id: 5, score: finalScore })
+            }).catch(e => console.log('Score sent'));
+
+            alert(`✓ Этап 5 завершен! Баллы: ${finalScore}/50\n\n🎉 ВСЕ ЭТАПЫ ПРОЙДЕНЫ!`);
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

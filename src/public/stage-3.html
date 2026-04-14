@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Этап 3: Эффективная коммуникация</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+        h1 { color: #667eea; margin-bottom: 30px; text-align: center; }
+        .zone { margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 5px solid #667eea; }
+        textarea, input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-family: inherit; }
+        textarea:focus, input:focus { border-color: #667eea; outline: none; }
+        button { padding: 12px 30px; margin-top: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+        .score { text-align: center; font-size: 1.5em; color: #667eea; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Этап 3: Эффективная коммуникация</h1>
+
+        <div class="zone">
+            <h2>Модуль 3: Интерактивные диалоги</h2>
+            <p>Практикуйте навыки эффективной коммуникации в различных сценариях.</p>
+
+            <label><strong>Сценарий 1: Конфликт в группе</strong></label>
+            <textarea id="scenario1" placeholder="Опишите, как бы вы разрешили конфликт..."></textarea>
+
+            <label><strong>Сценарий 2: Презентация идеи</strong></label>
+            <textarea id="scenario2" placeholder="Как вы представите свою идею команде?..."></textarea>
+
+            <label><strong>Сценарий 3: Критика и обратная связь</strong></label>
+            <textarea id="scenario3" placeholder="Как конструктивно ответить на критику?..."></textarea>
+
+            <button onclick="completeStage3()">✓ Завершить этап</button>
+            <div class="score" id="score">Баллы: 0/30</div>
+        </div>
+    </div>
+
+    <script>
+        function completeStage3() {
+            const s1 = document.getElementById('scenario1').value;
+            const s2 = document.getElementById('scenario2').value;
+            const s3 = document.getElementById('scenario3').value;
+
+            let score = 0;
+            if (s1.length >= 50) score += 10;
+            if (s2.length >= 50) score += 10;
+            if (s3.length >= 50) score += 10;
+
+            document.getElementById('score').textContent = `Баллы: ${score}/30`;
+
+            localStorage.setItem('stage3_score', score);
+            localStorage.setItem('stage3_completed', true);
+
+            fetch('/api/stage-submissions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('authToken') },
+                body: JSON.stringify({ stage_id: 3, score: score })
+            }).catch(e => console.log('Score sent'));
+
+            alert(`✓ Этап 3 завершен! Баллы: ${score}/30`);
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

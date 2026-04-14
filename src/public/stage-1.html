@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Этап 1: Лекционный зал - Квест</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .room {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .room.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .room-title {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .scenario {
+            background: linear-gradient(135deg, #6de8ef 0%, #37c3e5 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #333;
+            font-style: italic;
+        }
+
+        .task-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .task-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        textarea, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .info-block {
+            background: linear-gradient(135deg, #fff5e1 0%, #ffe0b2 100%);
+            border-left: 4px solid #ffa726;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-block strong {
+            color: #e65100;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            font-size: 0.95em;
+        }
+
+        .score-display {
+            background: #e3f2fd;
+            border: 2px solid #2196F3;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score-display .score-value {
+            font-size: 2.5em;
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        .score-display .score-label {
+            color: #1976D2;
+            font-weight: 600;
+        }
+
+        .hint {
+            background: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            color: #4a148c;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🏫 Этап 1: Лекционный зал</h1>
+        <p>Escape Room - проверка наблюдательности и аналитики</p>
+    </div>
+
+    <div class="content">
+        <!-- КОМНАТА 1 -->
+        <div class="room active" id="room1">
+            <div class="room-title">Комната 1: Логический пазл</div>
+
+            <div class="scenario">
+                Вы входите в лекционный зал. На доске написаны три волшебных слова, которые зашифрованы
+                в специальном коде. Возле доски лежит записка с подсказками. Найдите скрытые слова и
+                введите их в правильном порядке.
+            </div>
+
+            <div class="task-section">
+                <h3>🔐 Разгадайте код</h3>
+
+                <div class="info-block">
+                    <strong>Подсказки:</strong><br>
+                    1. Первое слово - антоним "конца"<br>
+                    2. Второе слово - состояние полного отсутствия беспокойства<br>
+                    3. Третье слово - процесс получения новых знаний
+                </div>
+
+                <div class="form-group">
+                    <label>Слово 1:</label>
+                    <input type="text" id="word1" placeholder="Введите первое слово">
+                </div>
+
+                <div class="form-group">
+                    <label>Слово 2:</label>
+                    <input type="text" id="word2" placeholder="Введите второе слово">
+                </div>
+
+                <div class="form-group">
+                    <label>Слово 3:</label>
+                    <input type="text" id="word3" placeholder="Введите третье слово">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="checkRoom1()">✓ Проверить ответ</button>
+                    <button class="btn-secondary" onclick="nextRoom()">⏭️ Пропустить</button>
+                </div>
+
+                <div id="room1-result"></div>
+            </div>
+        </div>
+
+        <!-- КОМНАТА 2 (ПСИХОЛОГ) -->
+        <div class="room" id="room2">
+            <div class="room-title">Комната 2: Кабинет психолога</div>
+
+            <div class="scenario">
+                Вы встречаетесь с психологом в её кабинете. Перед вами на столе лежат анкеты с
+                вопросами о ценностях и целях образовательного процесса. Вам нужно заполнить
+                анкету честно и подробно.
+            </div>
+
+            <div class="score-display">
+                <div class="score-label">Текущий результат</div>
+                <div class="score-value" id="totalScore">0</div>
+                <div class="score-label">из 100 баллов</div>
+            </div>
+
+            <div class="task-section">
+                <h3>📋 Анкета ценностей</h3>
+
+                <div class="form-group">
+                    <label>1. Какие ценности вы считаете наиболее важными в образовании?</label>
+                    <textarea id="value1" placeholder="Опишите ваш взгляд..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>2. Какую роль должен играть наставник в развитии студента?</label>
+                    <textarea id="value2" placeholder="Поделитесь своим мнением..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>3. Какие навыки вы хотите развить в себе?</label>
+                    <textarea id="value3" placeholder="Перечислите навыки..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>4. Как вы планируете применять полученные знания?</label>
+                    <textarea id="value4" placeholder="Опишите ваш план..."></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="completeStage()">✓ Завершить этап</button>
+                </div>
+
+                <div id="room2-result"></div>
+            </div>
+
+            <div class="progress-text">
+                💡 Ваши ответы будут сохранены и проверены экспертами
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let totalScore = 0;
+    const correctAnswers = {
+        word1: 'начало',
+        word2: 'спокойствие',
+        word3: 'учение'
+    };
+
+    function checkRoom1() {
+        const w1 = document.getElementById('word1').value.toLowerCase().trim();
+        const w2 = document.getElementById('word2').value.toLowerCase().trim();
+        const w3 = document.getElementById('word3').value.toLowerCase().trim();
+
+        let correct = 0;
+        let feedback = '<div class="info-block" style="background: #fff3e0; border-left-color: #ffa726;">';
+
+        if (w1 === correctAnswers.word1) {
+            correct += 1;
+            feedback += '<strong style="color: #e65100;">✓</strong> Слово 1 правильно!<br>';
+        } else {
+            feedback += '<strong style="color: #d32f2f;">✗</strong> Слово 1 неправильно. Подсказка: начало чего-то<br>';
+        }
+
+        if (w2 === correctAnswers.word2) {
+            correct += 1;
+            feedback += '<strong style="color: #e65100;">✓</strong> Слово 2 правильно!<br>';
+        } else {
+            feedback += '<strong style="color: #d32f2f;">✗</strong> Слово 2 неправильно. Подсказка: мир и спокойствие<br>';
+        }
+
+        if (w3 === correctAnswers.word3) {
+            correct += 1;
+            feedback += '<strong style="color: #e65100;">✓</strong> Слово 3 правильно!<br>';
+        } else {
+            feedback += '<strong style="color: #d32f2f;">✗</strong> Слово 3 неправильно. Подсказка: процесс образования<br>';
+        }
+
+        totalScore = correct * 20;
+        feedback += `<br><strong>Прогресс: ${correct}/3 слова (${totalScore} баллов)</strong></div>`;
+
+        if (correct === 3) {
+            feedback += '<button class="btn-primary" style="width: 100%; margin-top: 15px;" onclick="nextRoom()">➡️ Перейти в Комнату 2</button>';
+        }
+
+        document.getElementById('room1-result').innerHTML = feedback;
+    }
+
+    function nextRoom() {
+        document.getElementById('room1').classList.remove('active');
+        document.getElementById('room2').classList.add('active');
+        updateScore();
+    }
+
+    function updateScore() {
+        document.getElementById('totalScore').textContent = totalScore;
+    }
+
+    function completeStage() {
+        const v1 = document.getElementById('value1').value.trim();
+        const v2 = document.getElementById('value2').value.trim();
+        const v3 = document.getElementById('value3').value.trim();
+        const v4 = document.getElementById('value4').value.trim();
+
+        let textScore = 0;
+        if (v1.length >= 50) textScore += 15;
+        if (v2.length >= 50) textScore += 15;
+        if (v3.length >= 30) textScore += 15;
+        if (v4.length >= 50) textScore += 20;
+
+        totalScore += textScore;
+
+        const resultDiv = document.getElementById('room2-result');
+        resultDiv.innerHTML = `
+            <div class="score-display">
+                <div class="score-label">Финальный результат</div>
+                <div class="score-value">${totalScore}</div>
+                <div class="score-label">баллов</div>
+                <p style="margin-top: 15px; color: #1565c0;">✓ Этап 1 завершен!</p>
+            </div>
+        `;
+
+        // Сохраняем результат в localStorage для интеграции с backend
+        localStorage.setItem('stage1_score', totalScore);
+        localStorage.setItem('stage1_completed', true);
+
+        // Отправляем результат на backend
+        sendScoreToBackend(totalScore);
+    }
+
+    async function sendScoreToBackend(score) {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/stage-submissions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    stage_id: 1,
+                    score: score,
+                    answers: {
+                        words: { w1: document.getElementById('word1').value, w2: document.getElementById('word2').value, w3: document.getElementById('word3').value },
+                        values: { v1: document.getElementById('value1').value, v2: document.getElementById('value2').value, v3: document.getElementById('value3').value, v4: document.getElementById('value4').value }
+                    }
+                })
+            });
+
+            if (response.ok) {
+                console.log('✓ Результат отправлен на backend');
+            }
+        } catch (error) {
+            console.error('Ошибка отправки результата:', error);
+        }
+    }
+</script>
+</body>
+</html>
